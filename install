@@ -1,0 +1,63 @@
+#!/usr/bin/bash
+
+# Cyrillic Pad install script
+
+SCRIPT_NAME="install"
+
+if [[ "$1" == "--help" || "$1" == "-h" ]]
+then
+    printf "USAGE: ./$SCRIPT_NAME [DIR] [TARGET]\n\tDIR\t(optional) project root directory, default './'\n\tBUILD_TYPE\t(optional) CMake build type (Release, Debug, RelWithDebInfo, etc.), default 'Debug'\n"
+    exit 0
+fi
+
+if [[ $# > 0 && ! -d "$1" ]]
+then
+    printf "$SCRIPT_NAME: cannot access '$1': No such directory\n"
+    exit 1
+fi
+
+if [[ $# > 0 ]]
+then
+    cd "$1"
+fi
+
+if [[ ! -f "CMakeLists.txt" ]]
+then
+    printf "$SCRIPT_NAME: missing 'CMakeLists.txt'\n"
+    exit 1
+fi
+
+mkdir -p build
+cd build
+
+if [[ $# > 1 ]]
+then
+    cmake .. "-DCMAKE_BUILD_TYPE=$2"
+else
+    cmake .. -DCMAKE_BUILD_TYPE=Debug
+fi
+
+if [[ $? != 0 ]]
+then
+    printf "$SCRIPT_NAME: cmake fail\n"
+    exit 1
+fi
+
+if [[ $# > 1 ]]
+then
+    cmake --build . --parallel 4 --config "$2"
+    echo -e "\e[1;32mBuild succes with $2\e[0m"
+else
+    cmake --build . --parallel 4 --config Debug
+    echo -e "\e[1;32mBuild succes with Debug\e[0m"
+fi
+
+mkdir -p ../bin
+cp -ru ../assets ../bin
+cp -ru ../css ../bin
+if [[ -f "cyrillic-pad" ]]
+then
+    cp -u "cyrillic-pad" ../bin
+fi
+
+exit 0

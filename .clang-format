@@ -1,0 +1,7 @@
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+BasedOnStyle: WebKit
+IndentWidth: 8
+UseTab: Always
+AccessModifierOffset: -8
+AllowShortIfStatementsOnASingleLine: true
+AlignConsecutiveAssignments: true
