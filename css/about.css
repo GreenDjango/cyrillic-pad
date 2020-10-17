@@ -1,0 +1,29 @@
+/* main */
+#AboutBabel {
+	background-color: #121212;
+	color: white;
+}
+
+/* Button */
+#AboutBabel > QPushButton {
+	background-color: #121212;
+	color: white;
+}
+
+/* window table */
+QTabWidget,
+QTabWidget::pane,
+QTabWidget::tab-bar,
+QTabWidget::left-corner,
+QTabWidget::right-corner {
+	background-color: #121212;
+}
+QTabBar {
+	background-color: #121212;
+	color: white;
+}
+
+/* Label */
+QLabel {
+	color: white;
+}
