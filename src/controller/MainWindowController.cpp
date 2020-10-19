@@ -4,86 +4,123 @@
 // Qt dependencies
 #include <QAction>
 #include <QApplication>
+#include <QDir>
+#include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QRegularExpression>
+#include <QTextBlock>
 
-//---
-// Constructor / destructor
-//---
+#include <iostream>
+
 MainWindowController::MainWindowController(QWidget* parent)
     : MainWindowView { parent }
 {
+	connect(_actionOpen, &QAction::triggered, this, &MainWindowController::actionOpen);
+	connect(_actionSave, &QAction::triggered, this, &MainWindowController::actionSave);
+	connect(_actionSwitch, &QAction::triggered, this, &MainWindowController::actionSwitch);
 	connect(_actionAbout, &QAction::triggered, this, &MainWindowController::actionAbout);
-	// connect the "menu bar"
-	//connect(_actionConnect, &QAction::triggered, this, &MainWindowController::control_connect);
-	//connect(_action_about, &QAction::triggered, this, &MainWindowView::popup_about);
-	//connect(_action_aboutqt, &QAction::triggered, qApp, &QApplication::aboutQt);
 
-	// connect the "tool bar"
-	//connect(_action_connect, &QAction::triggered, this, &MainWindowController::control_connect);
-	//connect(_action_mute, &QAction::triggered, this, &MainWindowController::control_mute);
-	//connect(_action_deafen, &QAction::triggered, this, &MainWindowController::control_deafen);
-	//connect(_action_message, &QAction::triggered, this, &MainWindowController::control_message);
-
-	//connect(server.get(), &Requester::error, this, &MainWindowController::showServerError);
-	//connect(server.get(), &Requester::newFriend, this, &MainWindowController::onNewFriend);
-	//connect(server.get(), &Requester::newMsg, this, &MainWindowController::onNewMessage);
+	connect(_editor, &QPlainTextEdit::textChanged, this, &MainWindowController::onTextUpdate);
 }
 
-/*
-//---
+void MainWindowController::openFile(QString path)
+{
+	QFile file(path);
+	if (!file.open(QIODevice::ReadOnly)) {
+		QMessageBox::information(this, "Unable to open file", file.errorString());
+		return;
+	}
+	_savePath = path;
+	QDataStream in(&file);
+	QByteArray data;
+	//in.setVersion(QDataStream::Qt_4_5);
+	in >> data;
+
+	_editor->setPlainText(QString::fromUtf8(data));
+	_editor->moveCursor(QTextCursor::MoveOperation::End);
+}
+
 // Getter / setter
-//---
 const MainWindowView* MainWindowController::getView() const
 {
 	return { this };
 }
-*/
+
 // public slots
+void MainWindowController::actionOpen()
+{
+	QString fileName = QFileDialog::getOpenFileName(this,
+	    "Open file", "",
+	    "Cyrillic Pad files (*.cyp);;All Files (*)");
+
+	if (fileName.isEmpty())
+		return;
+
+	QFile file(fileName);
+	if (!file.open(QIODevice::ReadOnly)) {
+		QMessageBox::information(this, "Unable to open file", file.errorString());
+		return;
+	}
+	_savePath = fileName;
+	QDataStream in(&file);
+	QByteArray data;
+	//in.setVersion(QDataStream::Qt_4_5);
+	in >> data;
+
+	_editor->setPlainText(QString::fromUtf8(data));
+	_editor->moveCursor(QTextCursor::MoveOperation::End);
+}
+
+void MainWindowController::actionSave()
+{
+	if (_savePath.isEmpty()) {
+		QString fileName = QFileDialog::getSaveFileName(this,
+		    "Save file", "",
+		    "Cyrillic Pad files (*.cyp);;All Files (*)");
+		if (fileName.isEmpty())
+			return;
+		_savePath = fileName;
+	}
+	QFile file(_savePath);
+	if (!file.open(QIODevice::WriteOnly)) {
+		_savePath = "";
+		QMessageBox::information(this, "Unable to open file", file.errorString());
+		return;
+	}
+	QDataStream out(&file);
+	// out.setVersion(QDataStream::Qt_4_5);
+	out << _editor->toPlainText().toUtf8();
+}
+
+void MainWindowController::actionSwitch()
+{
+	_editor->setPlainText(_preview->toPlainText());
+}
+
 void MainWindowController::actionAbout()
 {
 	AboutView about { this };
 	about.exec();
 }
-/*
-void MainWindowController::control_mute()
-{
-	//TODO: mute audio actions
-	_mute = (_mute) ? false : true;
 
-	// Update the view part
-	emit { this->updateMute(); };
+void MainWindowController::onTextUpdate()
+{
+	QString txt = _editor->toPlainText();
+
+	const char* patterns[4] = { "a", "b", "v", NULL };
+	QString cyri { "абвгдеёжзийклмнопрстуфхцчшщъыьэюя" };
+
+	for (int i = 0; patterns[i] != NULL; i++) {
+		QString tmp = "";
+		while (tmp != txt) {
+			QRegularExpression re("(\\*.*)" + QString(patterns[i]) + "(.*\\*)");
+			tmp = txt;
+			txt.replace(re, "\\1" + cyri[i] + "\\2");
+		}
+	}
+	QRegularExpression re("\\*\\s*(\\S.*?)\\s*\\*");
+	txt = txt.replace(re, "'\\1'");
+
+	_preview->setPlainText(txt);
 }
-
-void MainWindowController::control_deafen()
-{
-	//TODO: deafen audio actions
-	_deafen = (_deafen) ? false : true;
-
-	// Update the view part
-	emit { this->updateDeafen(); };
-}
-
-void MainWindowController::control_message()
-{
-	if (!_hasSysTray) return;
-	_noNotif = (_noNotif) ? false : true;
-
-	// Update the view part
-	updateNotif();
-}
-
-void MainWindowController::showServerError(QString const& error)
-{
-	QMessageBox::warning(this, "Server", error);
-}
-
-void MainWindowController::onNewFriend(User const& user)
-{
-	sendNotify("New friend!", QString::fromStdString(user.get_login()) + " is now your friend");
-}
-
-void MainWindowController::onNewMessage(Message const& msg)
-{
-	sendNotify(QString::fromStdString("@" + msg.getAuthor()), QString::fromStdString(msg.getData()));
-}*/

@@ -5,6 +5,7 @@
 // Qt dependencies
 #include <QApplication>
 #include <QLoggingCategory>
+#include <QMessageBox>
 
 // STL dependencies
 #include <iostream>
@@ -22,12 +23,14 @@ int main(int argc, char* argv[])
 	QCoreApplication::setOrganizationName("GreenDjango");
 	QCoreApplication::setApplicationName("Cyrillic Pad");
 	QCoreApplication::setApplicationVersion(APP_VERSION);
-	//qRegisterMetaType<User>();
-	//qRegisterMetaType<Message>();
+	//qRegisterMetaType<>();
 
 	// Create custom main window
 	MainWindowController mainWin {};
 	mainWin.show();
+
+	if (argc >= 2)
+		mainWin.openFile(argv[1]);
 
 	// run the applications
 	return app.exec();

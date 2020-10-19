@@ -58,6 +58,10 @@ cp -ru ../css ../bin
 if [[ -f "cyrillic-pad" ]]
 then
     cp -u "cyrillic-pad" ../bin
+    if [[ ! -f "/usr/local/bin/cyrillic-pad" ]]
+    then
+        sudo ln -s ../bin/cyrillic-pad /usr/local/bin/
+    fi
 fi
 
 exit 0

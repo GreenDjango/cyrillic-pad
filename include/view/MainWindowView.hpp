@@ -18,20 +18,23 @@ public:
 	MainWindowView(QWidget* parent = nullptr);
 	~MainWindowView();
 
-public slots:
+protected slots:
 	//// tool bar
 	void updateMute();
 	//// other
 	void reloadCSS();
-	//void sendNotify(QString const& title, QString const& msg);
-	//void forceShow();
-	//void onIconClick(QSystemTrayIcon::ActivationReason reason);
 
 	// used by the controller
 protected:
 	QPlainTextEdit* _editor;
+	QPlainTextEdit* _preview;
 
 	// Left bar
+	QAction* _actionOpen;
+	QAction* _actionSave;
+	QAction* _actionSwitch;
+	QAction* _actionBold;
+	QAction* _actionItalic;
 	QAction* _actionAbout;
 
 private:

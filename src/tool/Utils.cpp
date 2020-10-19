@@ -18,7 +18,6 @@
 // load a CSS file based on the absolute path
 // TODO
 // * handle internal modification (like debug)
-// * close the file !
 //
 QString Utils::loadCSS(const QString& pathname)
 {
@@ -37,7 +36,7 @@ QString Utils::loadCSS(const QString& pathname)
 	ifs.seekg(0, std::ios::beg);
 	std::vector<char> bytes(fileSize);
 	ifs.read(bytes.data(), fileSize);
-	//TODO: /!\ close the file
+	ifs.close();
 
 	// return the content of the file
 	return { QString::fromStdString(std::string(bytes.data(), fileSize)) };
